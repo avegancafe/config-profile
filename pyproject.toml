@@ -1,0 +1,23 @@
+[project]
+name = "config_profile"
+version = "0.0.1"
+authors = [
+  { name="Kyle Holzinger", email="kyleholzinger@hey.com" },
+	{ name="Jamie Cristini", email="jamie@j2health.com" },
+]
+description = "Application configuration made simple"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/avegancafe/config-profile"
+Issues = "https://github.com/avegancafe/config-profile/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
