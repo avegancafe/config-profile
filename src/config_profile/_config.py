@@ -2,9 +2,9 @@ import logging
 import os
 from typing import Optional
 
-from pyprofile.DictUtil import DictUtil
-from pyprofile.FileUtil import FileUtil
-from pyprofile.SingletonUtil import singleton
+from pyprofile.dict_util import DictUtil
+from pyprofile.file_util import FileUtil
+from pyprofile.singleton_util import singleton
 from settings import Settings
 
 logger = logging.getLogger(__name__)
