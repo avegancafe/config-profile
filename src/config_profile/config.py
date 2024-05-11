@@ -2,10 +2,8 @@ import logging
 import os
 from typing import Optional
 
-from pyprofile.dict_util import DictUtil
-from pyprofile.file_util import FileUtil
-from pyprofile.singleton_util import singleton
-from settings import Settings
+from config_profile.dict_util import DictUtil
+from config_profile.file_util import FileUtil
 
 logger = logging.getLogger(__name__)
 
@@ -14,24 +12,14 @@ class RequiredConfigKeyException(Exception):
     pass
 
 
-def build_path(filename: str, rootdir: str) -> str:
-    normalized = os.path.normpath(filename)
-    # mac/linux absolutes start with / so lets just check if the file name starts with the root folder
-    if not normalized.startswith(rootdir):
-        if normalized.startswith("/") or normalized.startswith("\\"):
-            normalized = normalized[1:]
-    return os.path.abspath(os.path.join(cls.root_folder, normalized))
-
-
-@singleton
 class Config:
     """
     Gets a config value from various locations.
     The First location to supply a value wins.
     Values are searched for in this order:
         1) Pull from os env
-        2) Pull from application-{env}.yml
-        3) Pull from application.yml
+        2) Pull from application-{env}.toml
+        3) Pull from application.toml
 
     keys are lower case and use "." as a separator with the exception that
     not all os env vars support "." so for only env vars we also check for the uppercase key with "_" instead of "."
@@ -40,15 +28,15 @@ class Config:
     Note: this class implements the singleton pattern
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, resource_dir: str):
         self._config = {}
 
         # load values from the default application cfile
-        self._populate_with_values_from_yml("resources/application.yml")
+        self._populate_with_values_from_toml(config_file=os.path.join(resource_dir, "application.toml"))
 
         # load values from the env specific profile (ie local, dev, prod)
         profile = self.get_profile()
-        self._populate_with_values_from_yml(f"resources/application-{profile}.yml")
+        self._populate_with_values_from_toml(config_file=os.path.join(resource_dir, f"application-{profile}.toml"))
 
     def get_dataset_name(self, base_name: str = "network_intel"):
         profile = self.get_profile()
@@ -60,20 +48,19 @@ class Config:
         else:
             return f"{base_name}_{profile}"
 
-    def _populate_with_values_from_yml(self, config_file: str, rootdir: str):
-        config_fullpath = build_path(config_file, rootdir)
+    def _populate_with_values_from_toml(self, config_file: str):
         try:
-            values = FileUtil.load_toml_to_dict(config_fullpath)
+            values = FileUtil.load_toml_to_dict(config_file)
             # also print because the logger is sometimes not initialized yet
-            print(f"Populating config with {config_fullpath}")
-            logger.info(f"Populating config with {config_fullpath}")
+            print(f"Populating config with {config_file}")
+            logger.info(f"Populating config with {config_file}")
             for k, v in DictUtil.flatten_dict(values, sep=".").items():
                 self._config[k.lower()] = v
         except FileNotFoundError:
-            if "application-local.yml" not in config_file:
+            if "application-local.toml" not in config_file:
                 # also print because the logger is sometimes not initialized yet
-                print(f"Config file not found: {config_fullpath}")
-                logger.warning(f"Config file not found: {config_fullpath}")
+                print(f"Config file not found: {config_file}")
+                logger.warning(f"Config file not found: {config_file}")
 
     def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
         # first check the os env
@@ -140,7 +127,7 @@ class Config:
         return "local"
 
     @classmethod
-    def get_env_value(cls, key: str, default: Optional[str] = None) -> Optional[str]:
+    def get_env_value(self, key: str, default: Optional[str] = None) -> Optional[str]:
         v = os.environ.get(key)
         if v:
             return v
