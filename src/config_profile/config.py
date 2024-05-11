@@ -51,8 +51,6 @@ class Config:
     def _populate_with_values_from_toml(self, config_file: str):
         try:
             values = FileUtil.load_toml_to_dict(config_file)
-            # also print because the logger is sometimes not initialized yet
-            print(f"Populating config with {config_file}")
             logger.info(f"Populating config with {config_file}")
             for k, v in DictUtil.flatten_dict(values, sep=".").items():
                 self._config[k.lower()] = v
