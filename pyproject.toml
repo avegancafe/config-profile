@@ -1,6 +1,6 @@
 [project]
 name = "config_profile"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Kyle Holzinger", email="kyleholzinger@hey.com" },
 	{ name="Jamie Cristini", email="jamie@j2health.com" },
